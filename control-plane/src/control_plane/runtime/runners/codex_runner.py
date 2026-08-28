@@ -107,7 +107,7 @@ def _mount_db_skills(workdir: str, rows: list[Any]) -> None:
 @dataclass(kw_only=True)
 class CodexRunner:
     workspaces: Any                  # WorkspaceManager (duck-typed: .ensure(channel, topic))
-    openai_key: str                  # settings.openai_key, reused as CODEX_API_KEY
+    openai_key: str                  # real value -> CODEX_API_KEY; placeholder/empty -> ~/.codex/auth.json
     exec_codex: Callable[..., Awaitable[CodexResult]] = run_codex_exec
     default_sandbox_mode: str = "workspace-write"
     tool_bridge: Any = None          # CodexToolBridge | None (opt-in tool exposure)

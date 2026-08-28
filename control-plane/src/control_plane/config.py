@@ -74,6 +74,10 @@ class Settings(BaseSettings):
     bastion_outgoing_token: str | None = None
     bastion_persona: str | None = None
     bastion_model_id: str | None = None
+    bastion_runtime_kind: str = "openai_tool_loop"
+    bastion_runtime_config: dict = {}
+    bastion_allowed_tools: str = ""
+    bastion_can_exec: bool = False
     # Channels the bastion is subscribed to (so humans can @-mention it there) and
     # may read. Comma-separated; an outgoing-webhook bot only fires when mentioned
     # in a stream it is subscribed to.
@@ -148,6 +152,10 @@ class Settings(BaseSettings):
     @property
     def bastion_channel_list(self) -> list[str]:
         return [c.strip() for c in self.bastion_channels.split(",") if c.strip()]
+
+    @property
+    def bastion_allowed_tool_list(self) -> list[str]:
+        return [t.strip() for t in self.bastion_allowed_tools.split(",") if t.strip()]
 
     @property
     def exec_channel_list(self) -> list[str]:

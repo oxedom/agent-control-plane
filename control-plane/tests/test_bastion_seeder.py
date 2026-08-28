@@ -90,6 +90,29 @@ async def test_seed_is_idempotent_and_refreshes_creds(factory):
     assert box.decrypt(rows[0].zulip_outgoing_token_encrypted) == "rotated-tok"
 
 
+async def test_seed_refreshes_declarative_runtime(factory):
+    first_id = await seed_bastion(factory, _Settings(), SecretBox(TEST_FERNET_KEY))
+    settings = _Settings()
+    settings.bastion_model_id = "gpt-5.1-codex"
+    settings.bastion_runtime_kind = "codex"
+    settings.bastion_runtime_config = {
+        "codex": {"model": "gpt-5.1-codex", "expose_tools": True}
+    }
+    settings.bastion_allowed_tool_list = ["remember"]
+
+    second_id = await seed_bastion(factory, settings, SecretBox(TEST_FERNET_KEY))
+
+    assert second_id == first_id
+    async with factory() as session:
+        row = (
+            await session.execute(select(AgentRow).where(AgentRow.id == first_id))
+        ).scalar_one()
+    assert row.model_id == "gpt-5.1-codex"
+    assert row.runtime_kind == "codex"
+    assert row.runtime_config["codex"]["expose_tools"] is True
+    assert row.allowed_tools == ["remember"]
+
+
 async def test_seed_uses_default_model_with_real_settings(factory, monkeypatch):
     from control_plane.config import Settings
 

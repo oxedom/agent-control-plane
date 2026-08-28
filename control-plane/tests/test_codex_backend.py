@@ -191,6 +191,16 @@ async def test_minimal_env_is_allowlist_not_full_copy(monkeypatch):
     assert "NEON_DATABASE_URL" not in env
 
 
+@pytest.mark.parametrize("placeholder", ["", "replace-me", "PLACEHOLDER", "changeme"])
+def test_minimal_env_omits_placeholder_key_for_codex_account_auth(monkeypatch, placeholder):
+    from control_plane.runtime.runners.codex_backend import _minimal_env
+
+    monkeypatch.setenv("HOME", "/root")
+    env = _minimal_env(placeholder)
+    assert env["HOME"] == "/root"
+    assert "CODEX_API_KEY" not in env
+
+
 # ---------------------------------------------------------------------------
 # Task 3: BridgeWiring — MCP bridge injection
 # ---------------------------------------------------------------------------
