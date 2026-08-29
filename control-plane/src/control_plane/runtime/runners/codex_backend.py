@@ -129,9 +129,13 @@ _ENV_PASSTHROUGH = (
 
 
 def _minimal_env(api_key: str, bridge: BridgeWiring | None = None) -> dict[str, str]:
-    # Inherit only the allowlisted vars that are actually present; inject the key.
+    # Inherit only the allowlisted vars that are actually present. A real key
+    # explicitly selects API-key auth. Placeholder/empty values are omitted so
+    # Codex can use its mounted ~/.codex/auth.json (ChatGPT account auth).
     base = {k: os.environ[k] for k in _ENV_PASSTHROUGH if k in os.environ}
-    base["CODEX_API_KEY"] = api_key
+    key = api_key.strip()
+    if key and key.lower() not in {"replace-me", "placeholder", "changeme"}:
+        base["CODEX_API_KEY"] = key
     if bridge is not None and bridge.token is not None:
         base[bridge.token_env] = bridge.token
     return base

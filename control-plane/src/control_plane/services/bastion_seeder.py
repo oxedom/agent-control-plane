@@ -39,6 +39,10 @@ async def seed_bastion(
 
     persona = settings.bastion_persona or DEFAULT_BASTION_PERSONA
     model_id = settings.bastion_model_id or "gpt-4o"
+    runtime_kind = getattr(settings, "bastion_runtime_kind", "openai_tool_loop")
+    runtime_config = dict(getattr(settings, "bastion_runtime_config", {}) or {})
+    allowed_tools = list(getattr(settings, "bastion_allowed_tool_list", []) or [])
+    can_exec = bool(getattr(settings, "bastion_can_exec", False))
 
     async with session_factory() as session:
         existing = (
@@ -64,8 +68,12 @@ async def seed_bastion(
                         settings.bastion_outgoing_token
                     ),
                     readable_channels=channels,
+                    allowed_tools=allowed_tools,
                     provisioning_status="active",
                     is_bastion=True,
+                    can_exec=can_exec,
+                    runtime_kind=runtime_kind,
+                    runtime_config=runtime_config,
                 )
             else:
                 logger.warning(
@@ -82,6 +90,10 @@ async def seed_bastion(
             existing.persona = persona
             existing.model_id = model_id
             existing.readable_channels = channels
+            existing.allowed_tools = allowed_tools
+            existing.can_exec = can_exec
+            existing.runtime_kind = runtime_kind
+            existing.runtime_config = runtime_config
             existing.zulip_bot_id = settings.bastion_bot_id
             existing.zulip_bot_email = settings.bastion_bot_email
             existing.zulip_api_key_encrypted = secret_box.encrypt(settings.bastion_api_key)
@@ -96,6 +108,10 @@ async def seed_bastion(
             existing.persona = persona
             existing.model_id = model_id
             existing.readable_channels = channels
+            existing.allowed_tools = allowed_tools
+            existing.can_exec = can_exec
+            existing.runtime_kind = runtime_kind
+            existing.runtime_config = runtime_config
             await session.commit()
             agent_id, event_type = existing.id, "agent_updated"
 
