@@ -15,7 +15,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
       - run: uv sync
-      - run: uvx ruff check .
+      # Keep lint deterministic; newer Ruff releases may enable additional
+      # checks that turn unrelated legacy code into a failing baseline.
+      - run: uvx ruff@0.15.20 check .
       - run: uv run pytest
 
   exec-mcp:
